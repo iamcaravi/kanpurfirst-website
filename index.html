@@ -285,6 +285,7 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
         <li>📘 Facebook: <a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Kanpur First</a></li>
         <li>📸 Instagram: <a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">@kanpurfirst.in</a></li>
         <li>▶️ YouTube: <a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>
+        <li>💬 WhatsApp चैनल: <a href="https://whatsapp.com/channel/0029Vb8kJmBLdQeVgxNR2U3U" target="_blank" rel="noopener">Kanpur First</a></li>
       </ul>
     </div>
     <button class="back-btn" onclick="location.hash='#/'">← होम पर वापस</button>
@@ -313,6 +314,7 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
         <li><a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Facebook</a></li>
         <li><a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">Instagram @kanpurfirst.in</a></li>
         <li><a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">YouTube @KanpurFirst</a></li>
+        <li><a href="https://whatsapp.com/channel/0029Vb8kJmBLdQeVgxNR2U3U" target="_blank" rel="noopener">WhatsApp चैनल</a></li>
         <li><a href="mailto:kanpurfirst@gmail.com">kanpurfirst@gmail.com</a></li>
         <li><a href="#/contact">संपर्क करें</a></li>
       </ul>
@@ -561,7 +563,6 @@ function renderArticle(id){
     '<div class="article-meta"><span>📅 ' + esc(formatDate(s.date)) + '</span>' +
     viewCountSpan(s.id) + '<span>Kanpur First</span></div>' +
     '<div class="article-body">' + paras + '</div>' +
-    (s.sourceUrl ? '<a class="source-btn" href="' + esc(s.sourceUrl) + '" target="_blank" rel="noopener">पूरी खबर पढ़ें →</a>' : '') +
     '<div><button class="back-btn" onclick="location.hash=\'#/\'">← होम पर वापस</button>' +
     '</div>' +
     (related.length ? '<div class="related"><h2>संबंधित खबरें</h2><div class="grid">' + related.map(cardHTML).join("") + '</div></div>' : '') +
