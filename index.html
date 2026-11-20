@@ -579,7 +579,15 @@ function renderArticle(id){
       '<button class="back-btn" onclick="location.hash=\'#/\'">← होम पर वापस</button>';
     return;
   }
-  const paras = String(s.body || "").split(/\n\s*\n/).map(function(p){
+  const isIG = s.sourceUrl && s.sourceUrl.indexOf("instagram.com") !== -1;
+  let bodyText = String(s.body || "");
+  if(isIG && bodyText.length > 180){
+    bodyText = bodyText.slice(0, 180);
+    const cut = bodyText.lastIndexOf(" ");
+    if(cut > 80) bodyText = bodyText.slice(0, cut);
+    bodyText = bodyText + "…";
+  }
+  const paras = bodyText.split(/\n\s*\n/).map(function(p){
     return '<p>' + esc(p.trim()) + '</p>';
   }).join("");
   const related = allStories.filter(function(x){ return x.category === s.category && x.id !== s.id; }).slice(0, 3);
@@ -591,7 +599,7 @@ function renderArticle(id){
     '<div class="article-meta"><span>📅 ' + esc(formatDate(s.date)) + '</span>' +
     viewCountSpan(s.id) + '<span>Kanpur First</span></div>' +
     '<div class="article-body">' + paras + '</div>' +
-    ((s.sourceUrl && s.sourceUrl.indexOf("instagram.com") !== -1) ? '<a class="source-btn" href="' + esc(s.sourceUrl) + '" target="_blank" rel="noopener">पूरा पढ़ें →</a>' : '') +
+    (isIG ? '<a class="source-btn" href="' + esc(s.sourceUrl) + '" target="_blank" rel="noopener">आगे पढ़ें →</a>' : '') +
     '<div class="follow-row">' +
     '<a class="follow-btn ig" href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.4" fill="#fff" stroke="none"/></svg>Instagram पर Follow करें</a>' +
     '<a class="follow-btn fb" href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook पर Follow करें</a>' +
