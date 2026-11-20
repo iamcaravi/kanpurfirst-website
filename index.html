@@ -133,6 +133,16 @@ button{font-family:inherit;cursor:pointer}
 .article-body p{font-size:17px;line-height:1.85;margin-bottom:14px}
 .source-btn{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:10px 20px;border-radius:24px;margin-top:6px}
 .source-btn:hover{background:var(--red-dark)}
+.video-wrap{position:relative}
+.video-wrap .play-badge{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.video-wrap .play-badge span{width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;padding-left:5px;border:2px solid rgba(255,255,255,.85)}
+.video-tag{position:absolute;top:10px;right:10px;background:var(--red);color:#fff;font-size:11px;font-weight:800;padding:3px 9px;border-radius:14px;letter-spacing:.4px;z-index:2}
+.follow-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.follow-btn{display:inline-block;color:#fff;font-weight:800;font-size:14.5px;padding:10px 18px;border-radius:24px}
+.follow-btn.ig{background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)}
+.follow-btn.fb{background:#1877f2}
+.follow-btn:hover{opacity:.9}
+.a-video-box{display:block;position:relative;cursor:pointer}
 .back-btn{display:inline-block;margin:18px 0 0;background:var(--black);color:#fff;border:0;border-radius:24px;padding:9px 18px;font-weight:700;font-size:14px}
 .back-btn:hover{background:var(--red-dark)}
 .related{margin-top:26px}
@@ -430,10 +440,15 @@ function heroMediaHTML(story){
 function articleMediaHTML(story){
   if(story.image){
     const src = esc(story.image);
-    return '<div class="a-media">' +
+    const inner = '<div class="a-media">' +
       '<img class="a-bg" src="' + src + '" alt="" aria-hidden="true" onerror="this.style.display=\'none\'">' +
       '<img class="a-img" src="' + src + '" alt="" onerror="this.parentNode.outerHTML=placeholderHTML(\'' + esc(story.category) + '\',\'a-img\')">' +
       '</div>';
+    if(story.video && story.sourceUrl){
+      return '<a class="a-video-box video-wrap" href="' + esc(story.sourceUrl) + '" target="_blank" rel="noopener">' + inner +
+        '<span class="video-tag">▶ VIDEO</span><span class="play-badge"><span>▶</span></span></a>';
+    }
+    return inner;
   }
   return placeholderHTML(story.category, "a-img");
 }
@@ -441,12 +456,21 @@ function badgeHTML(cat){
   return '<span class="badge badge-' + slugOf(cat) + '">' + esc(cat) + '</span>';
 }
 function cardHTML(s){
-  return '<article class="card" onclick="location.hash=\'#/story/' + esc(s.id) + '\'">' +
-    mediaHTML(s, "card-img") +
+  const isVideo = !!s.video;
+  const media = isVideo
+    ? '<div class="video-wrap">' + mediaHTML(s, "card-img") +
+      '<span class="video-tag">▶ VIDEO</span><span class="play-badge"><span>▶</span></span></div>'
+    : mediaHTML(s, "card-img");
+  const open = (isVideo && s.sourceUrl)
+    ? 'onclick="window.open(\'' + esc(s.sourceUrl) + '\',\'_blank\')"'
+    : 'onclick="location.hash=\'#/story/' + esc(s.id) + '\'"';
+  return '<article class="card" ' + open + '>' +
+    media +
     '<div class="card-body">' + badgeHTML(s.category) +
     '<h3>' + esc(s.headline) + '</h3>' +
     '<p class="excerpt">' + esc(excerpt(s.body, 130)) + '</p>' +
     '<div class="card-meta"><span>📅 ' + esc(formatDate(s.date)) + '</span>' +
+    (isVideo ? '<span>Instagram पर देखें →</span>' : '') +
     '</div></div></article>';
 }
 
@@ -563,6 +587,11 @@ function renderArticle(id){
     '<div class="article-meta"><span>📅 ' + esc(formatDate(s.date)) + '</span>' +
     viewCountSpan(s.id) + '<span>Kanpur First</span></div>' +
     '<div class="article-body">' + paras + '</div>' +
+    ((s.sourceUrl && s.sourceUrl.indexOf("instagram.com") !== -1) ? '<a class="source-btn" href="' + esc(s.sourceUrl) + '" target="_blank" rel="noopener">पूरा पढ़ें →</a>' : '') +
+    '<div class="follow-row">' +
+    '<a class="follow-btn ig" href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">Instagram पर Follow करें</a>' +
+    '<a class="follow-btn fb" href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Facebook पर Follow करें</a>' +
+    '</div>' +
     '<div><button class="back-btn" onclick="location.hash=\'#/\'">← होम पर वापस</button>' +
     '</div>' +
     (related.length ? '<div class="related"><h2>संबंधित खबरें</h2><div class="grid">' + related.map(cardHTML).join("") + '</div></div>' : '') +
