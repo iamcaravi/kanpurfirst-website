@@ -153,6 +153,14 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
 .empty-note{background:#fff;border:1px dashed #bbb;border-radius:10px;padding:26px;text-align:center;color:var(--grey);font-size:15px}
 .loading{text-align:center;padding:40px 0;color:var(--grey);font-weight:700}
 
+/* ---------- Contact ---------- */
+.contact-box{background:#fff;border:1px solid #e3e3e3;border-radius:12px;padding:26px;max-width:640px}
+.contact-box p{font-size:15.5px;line-height:1.7;color:#333;margin-bottom:16px}
+.contact-list{list-style:none}
+.contact-list li{margin-bottom:12px;font-size:16px}
+.contact-list a{font-weight:700;color:var(--red)}
+.contact-list a:hover{text-decoration:underline}
+
 /* ---------- Responsive ---------- */
 @media (max-width:960px){
   .layout{grid-template-columns:1fr}
@@ -204,6 +212,7 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
       <a href="#/cat/politics" data-nav="politics">राजनीति</a>
       <a href="#/cat/business" data-nav="business">व्यापार</a>
       <a href="#/cat/dehat" data-nav="dehat">कानपुर देहात</a>
+      <a href="#/contact" data-nav="contact">संपर्क करें</a>
     </div>
     <div class="nav-tools">
       <form class="search-box" id="search-form">
@@ -265,6 +274,23 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
   </div>
 </div>
 
+<!-- ============ CONTACT VIEW ============ -->
+<div id="view-contact" hidden>
+  <div class="container">
+    <h2 class="section-title">संपर्क करें</h2>
+    <div class="contact-box">
+      <p>खबर भेजने, सुझाव देने या विज्ञापन के लिए हमसे संपर्क करें:</p>
+      <ul class="contact-list">
+        <li>📧 ईमेल: <a href="mailto:kanpurfirst@gmail.com">kanpurfirst@gmail.com</a></li>
+        <li>📘 Facebook: <a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Kanpur First</a></li>
+        <li>📸 Instagram: <a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">@kanpurfirst.in</a></li>
+        <li>▶️ YouTube: <a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>
+      </ul>
+    </div>
+    <button class="back-btn" onclick="location.hash='#/'">← होम पर वापस</button>
+  </div>
+</div>
+
 <footer>
   <div class="container">
     <div>
@@ -287,6 +313,8 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
         <li><a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Facebook</a></li>
         <li><a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">Instagram @kanpurfirst.in</a></li>
         <li><a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">YouTube @KanpurFirst</a></li>
+        <li><a href="mailto:kanpurfirst@gmail.com">kanpurfirst@gmail.com</a></li>
+        <li><a href="#/contact">संपर्क करें</a></li>
       </ul>
     </div>
   </div>
@@ -542,7 +570,7 @@ function renderArticle(id){
 }
 
 /* ---------- routing / views ---------- */
-const VIEWS = ["view-home","view-category","view-search","view-article"];
+const VIEWS = ["view-home","view-category","view-search","view-article","view-contact"];
 function showView(id){
   VIEWS.forEach(function(v){ document.getElementById(v).hidden = (v !== id); });
   window.scrollTo(0, 0);
@@ -565,6 +593,8 @@ function route(){
   }else if(head === "search"){
     renderSearch(decodeURIComponent(parts.slice(1).join("/") || ""));
     showView("view-search"); setActiveNav("");
+  }else if(head === "contact"){
+    showView("view-contact"); setActiveNav("contact");
   }else{
     showView("view-home"); setActiveNav("home");
   }
