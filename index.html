@@ -146,6 +146,10 @@ button{font-family:inherit;cursor:pointer}
 footer li a{display:inline-flex;align-items:center;gap:8px}
 .contact-list li{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .follow-btn{display:inline-flex;align-items:center;gap:8px}
+.follow-icons{display:flex;gap:10px;padding:14px;flex-wrap:wrap}
+.follow-icons a{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--line);border-radius:50%}
+.follow-icons a:hover{border-color:var(--red)}
+.follow-icons .soc-ico{width:20px;height:20px}
 .a-video-box{display:block;position:relative;cursor:pointer}
 .back-btn{display:inline-block;margin:18px 0 0;background:var(--black);color:#fff;border:0;border-radius:24px;padding:9px 18px;font-weight:700;font-size:14px}
 .back-btn:hover{background:var(--red-dark)}
@@ -258,6 +262,16 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
           <h2>सबसे ज़्यादा पढ़ी गई</h2>
           <ul class="mostread" id="mostread-list"></ul>
         </div>
+        <div class="side-box">
+          <h2>हमसे जुड़ें</h2>
+          <div class="follow-icons">
+            <a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener" aria-label="Facebook"><svg class="soc-ico" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+            <a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener" aria-label="Instagram"><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.4" fill="#E1306C" stroke="none"/></svg></a>
+            <a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener" aria-label="YouTube"><svg class="soc-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="5" width="21" height="14" rx="4" fill="#FF0000"/><path d="M10 9.3v5.4L14.8 12z" fill="#fff"/></svg></a>
+            <a href="https://x.com/KanpurFirst" target="_blank" rel="noopener" aria-label="X"><svg class="soc-ico" viewBox="0 0 24 24" fill="#000" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></a>
+            <a href="https://whatsapp.com/channel/0029Vb8kJmBLdQeVgxNR2U3U" target="_blank" rel="noopener" aria-label="WhatsApp"><svg class="soc-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#25D366"/><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="#fff" transform="translate(3.36 3.36) scale(0.72)"/></svg></a>
+          </div>
+        </div>
       </aside>
     </div>
   </div>
@@ -299,6 +313,7 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
         <li><svg class="soc-ico" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook: <a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Kanpur First</a></li>
         <li><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.4" fill="#E1306C" stroke="none"/></svg>Instagram: <a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">@kanpurfirst.in</a></li>
         <li><svg class="soc-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="5" width="21" height="14" rx="4" fill="#FF0000"/><path d="M10 9.3v5.4L14.8 12z" fill="#fff"/></svg>YouTube: <a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>
+        <li><svg class="soc-ico" viewBox="0 0 24 24" fill="#000" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X: <a href="https://x.com/KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>
         <li><svg class="soc-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#25D366"/><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="#fff" transform="translate(3.36 3.36) scale(0.72)"/></svg>WhatsApp चैनल: <a href="https://whatsapp.com/channel/0029Vb8kJmBLdQeVgxNR2U3U" target="_blank" rel="noopener">Kanpur First</a></li>
       </ul>
     </div>
@@ -328,6 +343,7 @@ footer .tag{font-size:13.5px;color:#aaa;margin-top:10px;line-height:1.6}
         <li><a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="#1877F2" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook</a></li>
         <li><a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="#E1306C" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.4" fill="#E1306C" stroke="none"/></svg>Instagram @kanpurfirst.in</a></li>
         <li><a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="5" width="21" height="14" rx="4" fill="#FF0000"/><path d="M10 9.3v5.4L14.8 12z" fill="#fff"/></svg>YouTube @KanpurFirst</a></li>
+        <li><a href="https://x.com/KanpurFirst" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg>X @KanpurFirst</a></li>
         <li><a href="https://whatsapp.com/channel/0029Vb8kJmBLdQeVgxNR2U3U" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#25D366"/><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" fill="#fff" transform="translate(3.36 3.36) scale(0.72)"/></svg>WhatsApp चैनल</a></li>
         <li><a href="mailto:kanpurfirstt@gmail.com"><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/></svg>kanpurfirstt@gmail.com</a></li>
         <li><a href="#/contact"><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/></svg>संपर्क करें</a></li>
