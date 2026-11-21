@@ -9,6 +9,10 @@
 //                              news.json — every story gets its own Google-
 //                              indexable page automatically (21 Nov 2026)
 //   GET /sitemap.xml         → dynamic sitemap: homepage + every /news/<slug>
+//   GET /news-sitemap.xml    → Google News sitemap (stories from last 2 days,
+//                              news:news tags) — for Google News / Discover
+//   GET /about               → server-rendered About page (E-E-A-T signal for
+//                              Google News Publisher Center)
 //   everything else          → ASSETS (static site)
 //
 // COUNTERS KV seeded 20 Nov 2026: visits starts at 80,768; per-article
@@ -40,6 +44,8 @@ export default {
     if (url.pathname === "/api/visitor-count") return visitorCount(env);
     if (url.pathname === "/api/views") return views(request, env);
     if (url.pathname === "/sitemap.xml") return sitemap();
+    if (url.pathname === "/news-sitemap.xml") return newsSitemap();
+    if (url.pathname === "/about" || url.pathname === "/about/") return aboutPage();
     const m = /^\/news\/([a-z0-9-]+)\/?$/.exec(url.pathname);
     if (m) return articlePage(m[1]);
     return env.ASSETS.fetch(request);
@@ -351,14 +357,17 @@ async function articlePage(slug) {
     .slice(0, 3);
   const badge = igBadgeText(s);
 
+  const isoDate = /^\d{4}-\d{2}-\d{2}$/.test(s.date || "")
+    ? s.date + "T00:00:00+05:30"
+    : s.date;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: s.headline,
     description: desc,
     image: [img],
-    datePublished: s.date,
-    dateModified: s.date,
+    datePublished: isoDate,
+    dateModified: isoDate,
     articleSection: s.category,
     inLanguage: "hi",
     author: { "@type": "Organization", name: "Kanpur First", url: SITE + "/" },
@@ -370,12 +379,23 @@ async function articlePage(slug) {
     mainEntityOfPage: { "@type": "WebPage", "@id": pageUrl },
   };
   const jsonLdStr = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "होम", item: SITE + "/" },
+      { "@type": "ListItem", position: 2, name: s.category, item: SITE + "/" },
+      { "@type": "ListItem", position: 3, name: s.headline, item: pageUrl },
+    ],
+  };
+  const breadcrumbStr = JSON.stringify(breadcrumb).replace(/</g, "\\u003c");
 
   const html =
     '<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8">' +
     '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
     "<title>" + esc(s.headline) + " | Kanpur First</title>" +
     '<meta name="description" content="' + esc(desc) + '">' +
+    '<meta name="robots" content="max-image-preview:large">' +
     '<link rel="canonical" href="' + esc(pageUrl) + '">' +
     '<meta property="og:title" content="' + esc(s.headline) + '">' +
     '<meta property="og:description" content="' + esc(desc) + '">' +
@@ -383,7 +403,7 @@ async function articlePage(slug) {
     '<meta property="og:url" content="' + esc(pageUrl) + '">' +
     '<meta property="og:image" content="' + esc(img) + '">' +
     '<meta property="og:site_name" content="Kanpur First">' +
-    '<meta property="article:published_time" content="' + esc(s.date) + '">' +
+    '<meta property="article:published_time" content="' + esc(isoDate) + '">' +
     '<meta property="article:section" content="' + esc(s.category) + '">' +
     '<meta name="twitter:card" content="summary_large_image">' +
     '<meta name="twitter:title" content="' + esc(s.headline) + '">' +
@@ -393,6 +413,7 @@ async function articlePage(slug) {
     '<link rel="preconnect" href="https://fonts.googleapis.com">' +
     '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">' +
     '<script type="application/ld+json">' + jsonLdStr + "</script>" +
+    '<script type="application/ld+json">' + breadcrumbStr + "</script>" +
     "<style>" + SITE_CSS + "</style></head><body>" +
     headerHTML(stories) +
     '<div class="container"><article class="article-wrap">' +
@@ -452,10 +473,124 @@ async function sitemap() {
       esc(s.date || latest) +
       "</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n";
   }
+  xml +=
+    "  <url><loc>" + SITE + "/about</loc><lastmod>" + esc(latest) +
+    "</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n";
   xml += "</urlset>\n";
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=600",
+    },
+  });
+}
+
+/* Google News sitemap — only stories published in the last 2 days, with
+   news:news tags (publication name, language, publication date, title).
+   This is what Google News / Top Stories / Discover read for freshness. */
+async function newsSitemap() {
+  let stories = [];
+  try {
+    stories = await fetchStories();
+  } catch (e) {
+    stories = [];
+  }
+  const now = Date.now();
+  const cutoff = now - 2 * 24 * 60 * 60 * 1000;
+  let xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n' +
+    '        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n';
+  for (const s of stories) {
+    if (!ID_RE.test(s.id || "")) continue;
+    const t = Date.parse((s.date || "") + "T00:00:00+05:30");
+    if (isNaN(t) || t < cutoff) continue;
+    xml +=
+      "  <url>\n    <loc>" + SITE + "/news/" + esc(s.id) + "</loc>\n" +
+      "    <news:news>\n" +
+      "      <news:publication>\n" +
+      "        <news:name>Kanpur First</news:name>\n" +
+      "        <news:language>hi</news:language>\n" +
+      "      </news:publication>\n" +
+      "      <news:publication_date>" + esc(s.date) + "</news:publication_date>\n" +
+      "      <news:title>" + esc(s.headline) + "</news:title>\n" +
+      "    </news:news>\n  </url>\n";
+  }
+  xml += "</urlset>\n";
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=300",
+    },
+  });
+}
+
+/* About page — who we are + contact. Google News Publisher Center and
+   Discover quality checks look for clear publisher identity on the site. */
+async function aboutPage() {
+  let stories = [];
+  try {
+    stories = await fetchStories();
+  } catch (e) {
+    stories = [];
+  }
+  const desc =
+    "Kanpur First — कानपुर की हर खबर, सबसे पहले! कानपुर और कानपुर देहात की ताज़ा स्थानीय खबरें: क्राइम, राजनीति, व्यापार, हादसे और शहर की हर बड़ी घटना।";
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsMediaOrganization",
+    name: "Kanpur First",
+    url: SITE + "/",
+    logo: { "@type": "ImageObject", url: SITE + "/assets/logo.png" },
+    email: "kanpurfirstt@gmail.com",
+    sameAs: [
+      "https://www.facebook.com/profile.php?id=61594383896937",
+      "https://www.instagram.com/kanpurfirst.in/",
+      "https://x.com/KanpurFirst",
+      "https://www.youtube.com/@KanpurFirst",
+    ],
+  };
+  const orgLdStr = JSON.stringify(orgLd).replace(/</g, "\\u003c");
+  const html =
+    '<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    "<title>हमारे बारे में | Kanpur First</title>" +
+    '<meta name="description" content="' + esc(desc) + '">' +
+    '<meta name="robots" content="max-image-preview:large">' +
+    '<link rel="canonical" href="' + SITE + '/about">' +
+    '<meta property="og:title" content="हमारे बारे में | Kanpur First">' +
+    '<meta property="og:description" content="' + esc(desc) + '">' +
+    '<meta property="og:type" content="website">' +
+    '<meta property="og:url" content="' + SITE + '/about">' +
+    '<meta property="og:image" content="' + SITE + '/assets/cover.jpg">' +
+    '<link rel="icon" href="/assets/logo.png">' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">' +
+    '<script type="application/ld+json">' + orgLdStr + "</script>" +
+    "<style>" + SITE_CSS + "</style></head><body>" +
+    headerHTML(stories) +
+    '<div class="container"><article class="article-wrap"><div class="article-inner">' +
+    "<h1>हमारे बारे में</h1>" +
+    '<div class="article-body">' +
+    "<p><b>Kanpur First</b> कानपुर की अपनी स्थानीय न्यूज़ सेवा है — \"कानपुर की हर खबर, सबसे पहले!\" हम कानपुर और कानपुर देहात की ताज़ा खबरें रोज़ अपने पाठकों तक पहुँचाते हैं: क्राइम, राजनीति, व्यापार, हादसे, शहर के विकास कार्य और हर वह घटना जो कानपुर के लोगों के लिए मायने रखती है।</p>" +
+    "<p>हमारी खबरें हर दिन अपडेट होती हैं। हर खबर के साथ उसकी पूरी जानकारी और मूल पोस्ट का लिंक दिया जाता है, ताकि पाठक चाहें तो आगे भी पढ़ सकें।</p>" +
+    "<h2>संपर्क करें</h2>" +
+    '<ul class="contact-list">' +
+    '<li>✉️ ईमेल: <a href="mailto:kanpurfirstt@gmail.com">kanpurfirstt@gmail.com</a></li>' +
+    '<li>📷 Instagram: <a href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener">@kanpurfirst.in</a></li>' +
+    '<li>📘 Facebook: <a href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener">Kanpur First</a></li>' +
+    '<li>𝕏 X: <a href="https://x.com/KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>' +
+    '<li>▶️ YouTube: <a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>' +
+    "</ul>" +
+    "<p>कोई खबर, सुझाव या शिकायत हो तो हमें ईमेल करें — हम हर संदेश पढ़ते हैं।</p>" +
+    "</div>" +
+    '<div><a class="back-btn" href="/">← होम पर वापस</a></div>' +
+    "</div></article></div>" +
+    footerHTML() +
+    "</body></html>";
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "public, max-age=600",
     },
   });
