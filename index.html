@@ -500,9 +500,7 @@ function cardHTML(s){
     ? '<div class="video-wrap">' + mediaHTML(s, "card-img") +
       '<span class="video-tag">▶ VIDEO</span><span class="play-badge"><span>▶</span></span></div>'
     : mediaHTML(s, "card-img");
-  const open = (isVideo && s.sourceUrl)
-    ? 'onclick="window.open(\'' + esc(s.sourceUrl) + '\',\'_blank\')"'
-    : 'onclick="location.hash=\'#/story/' + esc(s.id) + '\'"';
+  const open = 'onclick="location.href=\'/news/' + esc(s.id) + '\'"';
   return '<article class="card" ' + open + '>' +
     media +
     '<div class="card-body">' + badgeHTML(s.category) +
@@ -545,7 +543,7 @@ function renderAll(){
 }
 function renderTicker(){
   const items = allStories.slice(0, 12).map(function(s){
-    return '<a href="#/story/' + esc(s.id) + '">' + esc(s.headline) + '</a>';
+    return '<a href="/news/' + esc(s.id) + '">' + esc(s.headline) + '</a>';
   }).join("");
   document.getElementById("ticker-track").innerHTML = items + items; /* duplicated for seamless loop */
 }
@@ -554,7 +552,7 @@ function renderHero(){
   const slot = document.getElementById("hero-slot");
   if(!hero){ slot.innerHTML = ""; return; }
   slot.innerHTML =
-    '<section class="hero" onclick="location.hash=\'#/story/' + esc(hero.id) + '\'">' +
+    '<section class="hero" onclick="location.href=\'/news/' + esc(hero.id) + '\'">' +
     heroMediaHTML(hero) +
     '<div class="hero-overlay">' + badgeHTML(hero.category) +
     '<h1>' + esc(hero.headline) + '</h1>' +
@@ -589,7 +587,7 @@ function renderMostRead(){
     return String(b.date||"").localeCompare(String(a.date||""));
   }).slice(0, 5);
   document.getElementById("mostread-list").innerHTML = top.map(function(s, i){
-    return '<li onclick="location.hash=\'#/story/' + esc(s.id) + '\'">' +
+    return '<li onclick="location.href=\'/news/' + esc(s.id) + '\'">' +
       '<span class="num">' + (i+1) + '</span>' +
       '<span><span class="t">' + esc(s.headline) + '</span>' +
       viewCountSpan(s.id, "v") + '</span></li>';
