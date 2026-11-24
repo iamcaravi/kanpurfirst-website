@@ -46,6 +46,7 @@ export default {
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname === "/news-sitemap.xml") return newsSitemap();
     if (url.pathname === "/about" || url.pathname === "/about/") return aboutPage();
+    if (url.pathname === "/privacy" || url.pathname === "/privacy/") return privacyPage();
     const m = /^\/news\/([a-z0-9-]+)\/?$/.exec(url.pathname);
     if (m) return articlePage(m[1]);
     return env.ASSETS.fetch(request);
@@ -269,7 +270,8 @@ function footerHTML() {
     '<li><a href="mailto:kanpurfirstt@gmail.com">' + ICO_MAIL + "kanpurfirstt@gmail.com</a></li>" +
     '<li><a href="/#/contact">' + ICO_CHAT + "संपर्क करें</a></li>" +
     "</ul></div></div>" +
-    '<div class="copyright">© ' + year + " Kanpur First™ — Our City | Our People | Our Stories</div>" +
+    '<div class="copyright">© ' + year + " Kanpur First™ — Our City | Our People | Our Stories · " +
+    '<a href="/privacy" style="color:#999">गोपनीयता नीति</a></div>' +
     "</footer>"
   );
 }
@@ -476,6 +478,9 @@ async function sitemap() {
   xml +=
     "  <url><loc>" + SITE + "/about</loc><lastmod>" + esc(latest) +
     "</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n";
+  xml +=
+    "  <url><loc>" + SITE + "/privacy</loc><lastmod>" + esc(latest) +
+    "</lastmod><changefreq>monthly</changefreq><priority>0.3</priority></url>\n";
   xml += "</urlset>\n";
   return new Response(xml, {
     headers: {
@@ -583,6 +588,64 @@ async function aboutPage() {
     '<li>▶️ YouTube: <a href="https://www.youtube.com/@KanpurFirst" target="_blank" rel="noopener">@KanpurFirst</a></li>' +
     "</ul>" +
     "<p>कोई खबर, सुझाव या शिकायत हो तो हमें ईमेल करें — हम हर संदेश पढ़ते हैं।</p>" +
+    "</div>" +
+    '<div><a class="back-btn" href="/">← होम पर वापस</a></div>' +
+    "</div></article></div>" +
+    footerHTML() +
+    "</body></html>";
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=600",
+    },
+  });
+}
+
+/* Privacy Policy — required for Google AdSense approval (added 24 Nov 2026).
+   Server-rendered at /privacy, same chrome as /about. */
+async function privacyPage() {
+  let stories = [];
+  try {
+    stories = await fetchStories();
+  } catch (e) {
+    stories = [];
+  }
+  const desc =
+    "Kanpur First की गोपनीयता नीति — हम आपकी कौन सी जानकारी लेते हैं, कुकीज़ का इस्तेमाल कैसे होता है, और विज्ञापन (Google AdSense) के बारे में।";
+  const html =
+    '<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8">' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    "<title>गोपनीयता नीति | Kanpur First</title>" +
+    '<meta name="description" content="' + esc(desc) + '">' +
+    '<meta name="robots" content="max-image-preview:large">' +
+    '<link rel="canonical" href="' + SITE + '/privacy">' +
+    '<meta property="og:title" content="गोपनीयता नीति | Kanpur First">' +
+    '<meta property="og:description" content="' + esc(desc) + '">' +
+    '<meta property="og:type" content="website">' +
+    '<meta property="og:url" content="' + SITE + '/privacy">' +
+    '<meta property="og:image" content="' + SITE + '/assets/cover.jpg">' +
+    '<link rel="icon" href="/assets/logo.png">' +
+    '<link rel="preconnect" href="https://fonts.googleapis.com">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;600;700;800&display=swap" rel="stylesheet">' +
+    "<style>" + SITE_CSS + "</style></head><body>" +
+    headerHTML(stories) +
+    '<div class="container"><article class="article-wrap"><div class="article-inner">' +
+    "<h1>गोपनीयता नीति</h1>" +
+    '<div class="article-meta"><span>अंतिम अपडेट: 24 नवंबर 2026</span></div>' +
+    '<div class="article-body">' +
+    "<p><b>Kanpur First</b> (kanpurfirst.com) कानपुर की स्थानीय न्यूज़ वेबसाइट है। आपकी गोपनीयता हमारे लिए महत्वपूर्ण है। यह नीति बताती है कि हम कौन सी जानकारी लेते हैं, उसका इस्तेमाल कैसे करते हैं, और विज्ञापन के बारे में क्या जानना ज़रूरी है।</p>" +
+    "<h2>1. हम कौन सी जानकारी लेते हैं</h2>" +
+    "<p>हम आपसे नाम, ईमेल पता या फोन नंबर नहीं मांगते। साइट पर कोई लॉगिन, रजिस्ट्रेशन या कमेंट सिस्टम नहीं है। विज़िटर काउंटर सिर्फ कुल विज़िटर की संख्या गिनता है — इससे किसी व्यक्ति की पहचान नहीं की जाती। खबरों पर दिखने वाले व्यू काउंट भी सिर्फ कुल संख्या होते हैं, किसी पाठक की निजी जानकारी नहीं।</p>" +
+    "<h2>2. कुकीज़ और विज्ञापन</h2>" +
+    "<p>इस समय साइट पर कोई विज्ञापन कुकी नहीं लगाई जाती। भविष्य में इस साइट पर Google AdSense जैसे विज्ञापन दिखाए जा सकते हैं। Google सहित तीसरे पक्ष के विज्ञापनदाता आपकी रुचि के अनुसार विज्ञापन दिखाने के लिए कुकीज़ का इस्तेमाल कर सकते हैं। आप Google विज्ञापन सेटिंग्स (https://adssettings.google.com) पर जाकर वैयक्तिकृत विज्ञापन बंद कर सकते हैं, या www.aboutads.info/choices पर जाकर तीसरे पक्ष की कुकीज़ से बाहर निकल सकते हैं।</p>" +
+    "<h2>3. तीसरे पक्ष की वेबसाइटों के लिंक</h2>" +
+    "<p>हमारी साइट पर Instagram, Facebook, YouTube, X और WhatsApp के लिंक दिए जाते हैं। उन वेबसाइटों पर उनकी अपनी गोपनीयता नीति लागू होती है — हम उनके लिए ज़िम्मेदार नहीं हैं।</p>" +
+    "<h2>4. बच्चों की जानकारी</h2>" +
+    "<p>हम जानबूझकर 13 साल से कम उम्र के बच्चों की कोई निजी जानकारी नहीं लेते। अगर आपको लगे कि ऐसी कोई जानकारी हम तक पहुँची है, तो हमें ईमेल करें — हम उसे हटा देंगे।</p>" +
+    "<h2>5. नीति में बदलाव</h2>" +
+    "<p>यह गोपनीयता नीति समय-समय पर अपडेट हो सकती है। कोई भी बदलाव इसी पेज पर प्रकाशित किया जाएगा।</p>" +
+    "<h2>6. संपर्क करें</h2>" +
+    '<p>गोपनीयता से जुड़ा कोई सवाल हो तो हमें ईमेल करें: <a href="mailto:kanpurfirstt@gmail.com">kanpurfirstt@gmail.com</a></p>' +
     "</div>" +
     '<div><a class="back-btn" href="/">← होम पर वापस</a></div>' +
     "</div></article></div>" +
