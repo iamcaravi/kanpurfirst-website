@@ -112,7 +112,8 @@ button{font-family:inherit;cursor:pointer}
 .ph-dehat{background:linear-gradient(135deg,#fb8c00,#9c3d00)}
 .card-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px;flex:1}
 .card h3{font-size:16.5px;line-height:1.4;font-weight:700}
-.card .excerpt{font-size:13.5px;color:var(--grey);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .excerpt{font-size:13.5px;color:var(--grey);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.read-more-link{color:var(--red-dark);font-weight:800;font-size:13px}
 .card-meta{margin-top:auto;font-size:12px;color:var(--grey);display:flex;gap:10px;flex-wrap:wrap}
 .badge{display:inline-block;color:#fff;font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:20px;letter-spacing:.3px}
 .badge-kanpur{background:var(--c-kanpur)} .badge-crime{background:var(--c-crime)}
@@ -142,6 +143,13 @@ button{font-family:inherit;cursor:pointer}
 .article-inner h1{font-size:28px;line-height:1.35;font-weight:800;margin:10px 0 8px}
 .article-meta{font-size:13px;color:var(--grey);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .article-body p{font-size:17px;line-height:1.85;margin-bottom:14px}
+.article-lead{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.read-more{margin-top:6px}
+.read-more summary{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:10px 20px;border-radius:24px;cursor:pointer;list-style:none}
+.read-more summary::-webkit-details-marker{display:none}
+.read-more summary:hover{background:var(--red-dark)}
+.read-more .article-full{margin-top:14px}
+.play-link{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;padding-left:5px;border:2px solid rgba(255,255,255,.85);z-index:3}
 .source-btn{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:10px 20px;border-radius:24px;margin-top:6px}
 .source-btn:hover{background:var(--red-dark)}
 .video-wrap{position:relative}
@@ -161,7 +169,7 @@ footer li a{display:inline-flex;align-items:center;gap:8px}
 .follow-icons a{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border:1px solid var(--line);border-radius:50%}
 .follow-icons a:hover{border-color:var(--red)}
 .follow-icons .soc-ico{width:20px;height:20px}
-.a-video-box{display:block;position:relative;cursor:pointer}
+.a-video-box{display:block;position:relative}
 .back-btn{display:inline-block;margin:18px 0 0;background:var(--black);color:#fff;border:0;border-radius:24px;padding:9px 18px;font-weight:700;font-size:14px}
 .back-btn:hover{background:var(--red-dark)}
 .related{margin-top:26px}
@@ -399,32 +407,30 @@ function formatDate(iso){
   if(!m) return iso || "";
   return parseInt(m[3],10) + " " + HINDI_MONTHS[parseInt(m[2],10)-1] + " " + m[1];
 }
-/* Real view counts (Cloudflare KV via /api/views). The `views` field in
-   news.json is ignored — counts shown on the page come only from the API.
-   A story with no recorded views shows no count element at all. */
+/* Real view counts (Cloudflare KV via /api/views), with Instagram reel
+   views from news.json taking priority when present. Every story shows a
+   views count; likes are never shown. */
 function formatRealViews(count){
   count = Number(count) || 0;
-  if(count <= 0) return "";
+  if(count <= 0) return "0 बार पढ़ी गई";
   if(count >= 1000) return (count/1000).toFixed(1).replace(/\.0$/,"") + " हजार बार पढ़ी गई";
   return count + " बार पढ़ी गई";
 }
 function fmtIN(n){
   return (Number(n) || 0).toLocaleString("en-IN");
 }
-/* Instagram counts from news.json take priority: reels show their IG view
-   count ("X बार देखी गई"), photo posts show their IG like count. */
+/* Every post shows views, never likes: reels use their Instagram view
+   count when available; all other posts use the website view counter. */
 function igBadgeText(storyId){
   const c = igCounts[storyId];
   if(!c) return "";
   if(c.views > 0) return "👁 " + fmtIN(c.views) + " बार देखी गई";
-  if(c.likes > 0) return "❤ " + fmtIN(c.likes);
   return "";
 }
 function badgeText(storyId){
   const ig = igBadgeText(storyId);
   if(ig) return ig;
-  const kv = formatRealViews(viewCounts[storyId]);
-  return kv ? "👁 " + kv : "";
+  return "👁 " + formatRealViews(viewCounts[storyId]);
 }
 function viewCountSpan(storyId, extraCls){
   const t = badgeText(storyId);
@@ -495,8 +501,8 @@ function articleMediaHTML(story){
       '<img class="a-img" src="' + src + '" alt="" onerror="this.parentNode.outerHTML=placeholderHTML(\'' + esc(story.category) + '\',\'a-img\')">' +
       '</div>';
     if(story.video && story.sourceUrl){
-      return '<a class="a-video-box video-wrap" href="' + esc(story.sourceUrl) + '" target="_blank" rel="noopener">' + inner +
-        '<span class="video-tag">▶ VIDEO</span><span class="play-badge"><span>▶</span></span></a>';
+      return '<div class="a-video-box video-wrap">' + inner +
+        '<span class="video-tag">▶ VIDEO</span><a class="play-link" href="' + esc(story.sourceUrl) + '" target="_blank" rel="noopener" aria-label="Instagram पर वीडियो देखें">▶</a></div>';
     }
     return inner;
   }
@@ -509,7 +515,11 @@ function cardHTML(s){
   const isVideo = !!s.video;
   const media = isVideo
     ? '<div class="video-wrap">' + mediaHTML(s, "card-img") +
-      '<span class="video-tag">▶ VIDEO</span><span class="play-badge"><span>▶</span></span></div>'
+      '<span class="video-tag">▶ VIDEO</span>' +
+      (s.sourceUrl
+        ? '<a class="play-link" href="' + esc(s.sourceUrl) + '" target="_blank" rel="noopener" aria-label="Instagram पर वीडियो देखें" onclick="event.stopPropagation()">▶</a>'
+        : '<span class="play-badge"><span>▶</span></span>') +
+      '</div>'
     : mediaHTML(s, "card-img");
   const open = 'onclick="location.href=\'/news/' + esc(s.id) + '\'"';
   return '<article class="card" ' + open + '>' +
@@ -517,9 +527,9 @@ function cardHTML(s){
     '<div class="card-body">' + badgeHTML(s.category) +
     '<h3>' + esc(s.headline) + '</h3>' +
     '<p class="excerpt">' + esc(excerpt(s.body, 130)) + '</p>' +
+    '<span class="read-more-link">आगे पढ़ें →</span>' +
     '<div class="card-meta"><span>📅 ' + esc(formatDate(s.date)) + '</span>' +
     viewCountSpan(s.id) +
-    (isVideo ? '<span>Instagram पर देखें →</span>' : '') +
     '</div></div></article>';
 }
 
@@ -565,6 +575,9 @@ function renderHero(){
   slot.innerHTML =
     '<section class="hero" onclick="location.href=\'/news/' + esc(hero.id) + '\'">' +
     heroMediaHTML(hero) +
+    (hero.video && hero.sourceUrl
+      ? '<a class="play-link" href="' + esc(hero.sourceUrl) + '" target="_blank" rel="noopener" aria-label="Instagram पर वीडियो देखें" onclick="event.stopPropagation()">▶</a>'
+      : '') +
     '<div class="hero-overlay">' + badgeHTML(hero.category) +
     '<h1>' + esc(hero.headline) + '</h1>' +
     '<div class="hero-meta"><span>📅 ' + esc(formatDate(hero.date)) + '</span>' +
@@ -655,17 +668,15 @@ function renderArticle(id){
       '<button class="back-btn" onclick="location.hash=\'#/\'">← होम पर वापस</button>';
     return;
   }
-  const isIG = s.sourceUrl && s.sourceUrl.indexOf("instagram.com") !== -1;
-  let bodyText = String(s.body || "");
-  if(isIG && bodyText.length > 180){
-    bodyText = bodyText.slice(0, 180);
-    const cut = bodyText.lastIndexOf(" ");
-    if(cut > 80) bodyText = bodyText.slice(0, cut);
-    bodyText = bodyText + "…";
-  }
+  const bodyText = String(s.body || "");
   const paras = bodyText.split(/\n\s*\n/).map(function(p){
     return '<p>' + esc(p.trim()) + '</p>';
   }).join("");
+  const flatBody = bodyText.replace(/\s+/g, " ").trim();
+  const articleBody = flatBody.length > 140
+    ? '<p class="article-lead">' + esc(excerpt(bodyText, 140)) + '</p>' +
+      '<details class="read-more"><summary>आगे पढ़ें →</summary><div class="article-full">' + paras + '</div></details>'
+    : paras;
   const related = allStories.filter(function(x){ return x.category === s.category && x.id !== s.id; }).slice(0, 3);
   slot.innerHTML =
     '<article class="article-wrap">' +
@@ -674,8 +685,7 @@ function renderArticle(id){
     '<h1>' + esc(s.headline) + '</h1>' +
     '<div class="article-meta"><span>📅 ' + esc(formatDate(s.date)) + '</span>' +
     viewCountSpan(s.id) + '<span>Kanpur First</span></div>' +
-    '<div class="article-body">' + paras + '</div>' +
-    (isIG ? '<a class="source-btn" href="' + esc(s.sourceUrl) + '" target="_blank" rel="noopener">आगे पढ़ें →</a>' : '') +
+    '<div class="article-body">' + articleBody + '</div>' +
     '<div class="follow-row">' +
     '<a class="follow-btn ig" href="https://www.instagram.com/kanpurfirst.in/" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.6" cy="6.4" r="1.4" fill="#fff" stroke="none"/></svg>Instagram पर Follow करें</a>' +
     '<a class="follow-btn fb" href="https://www.facebook.com/profile.php?id=61594383896937" target="_blank" rel="noopener"><svg class="soc-ico" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>Facebook पर Follow करें</a>' +
