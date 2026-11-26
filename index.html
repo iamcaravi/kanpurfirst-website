@@ -144,11 +144,15 @@ button{font-family:inherit;cursor:pointer}
 .article-meta{font-size:13px;color:var(--grey);display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .article-body p{font-size:17px;line-height:1.85;margin-bottom:14px}
 .article-lead{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-.read-more{margin-top:6px}
-.read-more summary{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:10px 20px;border-radius:24px;cursor:pointer;list-style:none}
+.read-more{margin-top:6px;display:flex;flex-direction:column}
+.read-more summary{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:10px 20px;border-radius:24px;cursor:pointer;list-style:none;order:2;align-self:flex-start}
 .read-more summary::-webkit-details-marker{display:none}
 .read-more summary:hover{background:var(--red-dark)}
-.read-more .article-full{margin-top:14px}
+.read-more .article-full{order:1}
+.read-more .less-text{display:none}
+.read-more[open] .more-text{display:none}
+.read-more[open] .less-text{display:inline}
+.article-body:has(.read-more[open]) .article-lead{display:none}
 .play-link{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;padding-left:5px;border:2px solid rgba(255,255,255,.85);z-index:3}
 .source-btn{display:inline-block;background:var(--red);color:#fff;font-weight:800;padding:10px 20px;border-radius:24px;margin-top:6px}
 .source-btn:hover{background:var(--red-dark)}
@@ -407,30 +411,17 @@ function formatDate(iso){
   if(!m) return iso || "";
   return parseInt(m[3],10) + " " + HINDI_MONTHS[parseInt(m[2],10)-1] + " " + m[1];
 }
-/* Real view counts (Cloudflare KV via /api/views), with Instagram reel
-   views from news.json taking priority when present. Every story shows a
-   views count; likes are never shown. */
-function formatRealViews(count){
-  count = Number(count) || 0;
-  if(count <= 0) return "0 बार पढ़ी गई";
-  if(count >= 1000) return (count/1000).toFixed(1).replace(/\.0$/,"") + " हजार बार पढ़ी गई";
-  return count + " बार पढ़ी गई";
-}
+/* Displayed view counts are Instagram views only (news.json `views`).
+   Website/KV counts and Instagram likes are never shown as views. */
 function fmtIN(n){
   return (Number(n) || 0).toLocaleString("en-IN");
 }
-/* Every post shows views, never likes: reels use their Instagram view
-   count when available; all other posts use the website view counter. */
-function igBadgeText(storyId){
-  const c = igCounts[storyId];
-  if(!c) return "";
-  if(c.views > 0) return "👁 " + fmtIN(c.views) + " बार देखी गई";
-  return "";
-}
+/* Views shown on the site are Instagram views only. Likes and website
+   view counters are never displayed in place of Instagram views. */
 function badgeText(storyId){
-  const ig = igBadgeText(storyId);
-  if(ig) return ig;
-  return "👁 " + formatRealViews(viewCounts[storyId]);
+  const c = igCounts[storyId];
+  if(!c || !(c.views > 0)) return "";
+  return "👁 " + fmtIN(c.views) + " बार देखी गई";
 }
 function viewCountSpan(storyId, extraCls){
   const t = badgeText(storyId);
@@ -631,7 +622,7 @@ function renderMostRead(){
      ties by date desc, then seed order (stable sort). With all-zero
      counts this naturally falls back to newest-first. */
   const top = allStories.slice().sort(function(a,b){
-    const ec = function(s){ const c = igCounts[s.id]; return (c && c.views) ? c.views : (viewCounts[s.id]||0); };
+    const ec = function(s){ const c = igCounts[s.id]; return (c && c.views) ? c.views : 0; };
     const dv = ec(b) - ec(a);
     if(dv) return dv;
     return String(b.date||"").localeCompare(String(a.date||""));
@@ -675,7 +666,7 @@ function renderArticle(id){
   const flatBody = bodyText.replace(/\s+/g, " ").trim();
   const articleBody = flatBody.length > 140
     ? '<p class="article-lead">' + esc(excerpt(bodyText, 140)) + '</p>' +
-      '<details class="read-more"><summary>आगे पढ़ें →</summary><div class="article-full">' + paras + '</div></details>'
+      '<details class="read-more"><summary><span class="more-text">आगे पढ़ें →</span><span class="less-text">कम पढ़ें ↑</span></summary><div class="article-full">' + paras + '</div></details>'
     : paras;
   const related = allStories.filter(function(x){ return x.category === s.category && x.id !== s.id; }).slice(0, 3);
   slot.innerHTML =
