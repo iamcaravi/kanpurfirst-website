@@ -45,6 +45,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/visitor-count") return visitorCount(env);
     if (url.pathname === "/api/views") return views(request, env);
+    if (url.pathname === "/api/news") return newsApi();
     if (url.pathname === "/sitemap.xml") return sitemap();
     if (url.pathname === "/news-sitemap.xml") return newsSitemap();
     if (url.pathname === "/about" || url.pathname === "/about/") return aboutPage();
@@ -194,6 +195,23 @@ async function fetchStories() {
   if (!res.ok) throw new Error("news fetch " + res.status);
   const data = await res.json();
   return Array.isArray(data.stories) ? data.stories : [];
+}
+
+/* Edge-cached news feed for the homepage: same-origin and fast, unlike a
+   cache-busted raw.githubusercontent fetch on every page load. */
+async function newsApi() {
+  try {
+    const stories = await fetchStories();
+    return Response.json(
+      { stories },
+      { headers: { "Cache-Control": "public, max-age=60" } }
+    );
+  } catch (e) {
+    return Response.json(
+      { error: "news unavailable" },
+      { status: 503, headers: { "Cache-Control": "no-store" } }
+    );
+  }
 }
 
 // Archived stories (>25 days old, off the homepage) keep their /news/<slug>
