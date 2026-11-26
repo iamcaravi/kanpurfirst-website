@@ -573,9 +573,35 @@ function renderHero(){
 }
 function renderLatest(){
   const el = document.getElementById("latest-grid");
-  el.innerHTML = allStories.length
-    ? allStories.map(cardHTML).join("")
-    : '<div class="empty-note">अभी कोई खबर नहीं है।</div>';
+  if(!allStories.length){
+    el.innerHTML = '<div class="empty-note">अभी कोई खबर नहीं है।</div>';
+    return;
+  }
+  /* Unlimited scroll feed (user, 26 Nov 2026): render in batches as the
+     reader scrolls, FB/Instagram-style — every story stays in the feed. */
+  el.innerHTML = "";
+  let shown = 0;
+  const BATCH = 12;
+  const sentinel = document.createElement("div");
+  sentinel.id = "feed-sentinel";
+  sentinel.style.cssText = "height:1px";
+  el.after(sentinel);
+  function appendBatch(){
+    const next = allStories.slice(shown, shown + BATCH);
+    if(!next.length){ sentinel.remove(); return; }
+    el.insertAdjacentHTML("beforeend", next.map(cardHTML).join(""));
+    shown += next.length;
+    if(shown >= allStories.length) sentinel.remove();
+  }
+  appendBatch();
+  if("IntersectionObserver" in window){
+    const io = new IntersectionObserver(function(entries){
+      if(entries[0].isIntersecting) appendBatch();
+    }, { rootMargin: "600px" });
+    io.observe(sentinel);
+  } else {
+    while(shown < allStories.length) appendBatch();
+  }
 }
 function renderCategorySections(){
   const wrap = document.getElementById("category-sections");
