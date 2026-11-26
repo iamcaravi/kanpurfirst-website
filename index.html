@@ -525,24 +525,46 @@ function cardHTML(s){
 }
 
 /* ---------- data loading ---------- */
-async function loadNews(){
-  let data = null;
-  try{
-    const res = await fetch(NEWS_JSON_URL + "?v=" + Date.now());
-    if(!res.ok) throw new Error("HTTP " + res.status);
-    data = await res.json();
-    if(!data || !Array.isArray(data.stories)) throw new Error("bad data");
-  }catch(e){
-    data = FALLBACK_NEWS;
-  }
+/* Fast first paint: render the last fetched news from localStorage
+   instantly, then refresh from the edge-cached /api/news endpoint and
+   re-render. No cache-buster and no KV count fetch block rendering. */
+function applyNews(data){
   allStories = data.stories;
   igCounts = {};
   allStories.forEach(function(s){
     igCounts[s.id] = { views: Number(s.views) || 0, likes: Number(s.likes) || 0 };
   });
-  await loadViewCounts();
   renderAll();
   route();
+}
+async function loadNews(){
+  let rendered = false;
+  try{
+    const cached = localStorage.getItem("kf-news-cache");
+    if(cached){
+      const cdata = JSON.parse(cached);
+      if(cdata && Array.isArray(cdata.stories) && cdata.stories.length){
+        applyNews(cdata);
+        rendered = true;
+      }
+    }
+  }catch(e){ /* cache is best-effort */ }
+  let data = null;
+  try{
+    let res = await fetch("/api/news");
+    if(!res.ok) res = await fetch(NEWS_JSON_URL);
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    data = await res.json();
+    if(!data || !Array.isArray(data.stories)) throw new Error("bad data");
+  }catch(e){
+    data = null;
+  }
+  if(data){
+    try{ localStorage.setItem("kf-news-cache", JSON.stringify(data)); }catch(e){}
+    applyNews(data);
+  } else if(!rendered){
+    applyNews(FALLBACK_NEWS);
+  }
 }
 
 /* ---------- rendering ---------- */
